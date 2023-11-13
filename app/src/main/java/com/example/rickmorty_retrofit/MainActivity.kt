@@ -1,0 +1,43 @@
+package com.example.rickmorty_retrofit
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val rick = findViewById<RecyclerView>(R.id.rv_character)
+        //mendeklarasikan variabel dengan mencari tampilan RecyclerView dengan ID rv_character
+
+        ApiConfig.getService().getRick().enqueue(object : Callback<ResponseRick>{
+            override fun onResponse(call: Call<ResponseRick>, response: Response<ResponseRick>){
+                if(response.isSuccessful){
+                    //mengambil data respons dalam bentuk objek
+                    val responseRick = response.body()
+                    val dataRick = responseRick?.results
+                    val rickAdapter = RickAdapter(dataRick as List<ResultsItem>)
+                    //mengonfigurasi objek
+                    rick.apply {
+                        layoutManager =LinearLayoutManager(this@MainActivity)
+                        setHasFixedSize(true)
+                        rickAdapter.notifyDataSetChanged()
+                        adapter = rickAdapter
+                    }
+                }
+            }
+            //fungsi yang dioverride dari interface Callback
+            override fun onFailure (call: Call<ResponseRick>, t: Throwable){
+                // Pesan fail dari Throwable ditampilkan dalam bentuk pesan Toast
+                Toast.makeText(applicationContext, t.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+}
